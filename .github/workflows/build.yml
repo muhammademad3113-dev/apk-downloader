@@ -1,4 +1,4 @@
-name: CI
+name: Build APK with Docker
 
 on:
   push:
@@ -6,30 +6,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-
-    - name: Install dependencies
+    - name: Build with Official Buildozer Docker
       run: |
-        sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev automake
-        pip install --upgrade pip
-        pip install --user Cython==0.29.36 buildozer
-
-    - name: Build APK
-      run: |
-        export PATH=$PATH:~/.local/bin
-        buildozer -v android debug
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v3
+        docker run --rm \
+          --volume "$PWD":/home/user/hostcwd \
+          kivy/buildozer:latest \
+          android debug
+          
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
       with:
-        name: package
+        name: course-downloader-apk
         path: bin/*.apk
